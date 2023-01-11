@@ -32,20 +32,29 @@ CARD_LIST = [
 OUTPUT_FILE = "cardinfo.csv"
 
 
-def main():
-    response = requests.get(API+"?name="+"|".join(CARD_LIST))
-    cards: list = response.json().get("data", [])
+def get_columns(card_names: list, output_file: str, columns: list):
+    response = requests.get(API+"?name="+"|".join(card_names)).json()
+    cards = response.get("data", [])
     if not cards:
         print("empty response")
         return
 
     for card in cards:
         card["image"] = card["card_images"][0]["image_url_cropped"]
-    with open(os.getcwd()+OUTPUT_FILE, "w+", encoding="utf-8", newline='') as f:
-        writer = csv.DictWriter(f, HEADERS, extrasaction="ignore")
+    with open(get_dir()+output_file, "w+", encoding="utf-8", newline='') as f:
+        writer = csv.DictWriter(f, columns, extrasaction="ignore")
         writer.writerows(cards)
 
 
-if __name__ == '__main__':
-    main()
+def get_dir():
+    return os.getcwd()+"\\"
 
+
+def load_card_names(input_file):
+    with open(get_dir()+input_file, "r", encoding="utf-8", newline='') as f:
+        reader = csv.reader(f)
+        return [line[0] for line in reader]
+
+
+if __name__ == '__main__':
+    get_columns(CARD_LIST, OUTPUT_FILE, HEADERS)
